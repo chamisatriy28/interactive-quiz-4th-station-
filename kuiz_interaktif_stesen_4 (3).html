@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuiz Interaktif Stesen 4 - Penyelesaian Masalah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 md:p-6 text-slate-800">
+
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-3xl w-full border border-slate-100 overflow-hidden flex flex-col min-h-[600px]">
+        
+        <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-teal-500 rounded-lg text-white">
+                    <i class="fa-solid fa-shapes text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base md:text-lg leading-tight">Stesen 4: Penyelesaian Masalah</h1>
+                    <p class="text-xs text-slate-400">Koordinat • Nisbah • Kadaran</p>
+                </div>
+            </div>
+            <button onclick="showLeaderboardModal()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition border border-slate-700">
+                <i class="fa-solid fa-trophy text-amber-400"></i>
+                <span class="hidden sm:inline">Carta Kedudukan</span>
+            </button>
+        </div>
+
+        <div class="p-6 flex-1 flex flex-col justify-center">
+
+            <!-- 1. START SCREEN / REGISTRATION -->
+            <div id="start-screen" class="space-y-6 max-w-md mx-auto w-full py-4">
+                <div class="text-center space-y-2">
+                    <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-bold rounded-full uppercase tracking-wider">Aktiviti Berkumpulan</span>
+                    <h2 class="text-2xl font-bold text-slate-900">Selamat Datang!</h2>
+                    <p class="text-sm text-slate-500">Sila pilih kumpulan anda untuk memulakan set soalan khusus (8 Kumpulan).</p>
+                </div>
+
+                <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Kumpulan Anda</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-users absolute left-3 top-3 text-slate-400"></i>
+                            <select id="group-select" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm text-slate-700 font-medium">
+                                <option value="">-- Pilih Kumpulan (1 hingga 8) --</option>
+                                <option value="1">Kumpulan 1 (Set Soalan A)</option>
+                                <option value="2">Kumpulan 2 (Set Soalan B)</option>
+                                <option value="3">Kumpulan 3 (Set Soalan C)</option>
+                                <option value="4">Kumpulan 4 (Set Soalan D)</option>
+                                <option value="5">Kumpulan 5 (Set Soalan A)</option>
+                                <option value="6">Kumpulan 6 (Set Soalan B)</option>
+                                <option value="7">Kumpulan 7 (Set Soalan C)</option>
+                                <option value="8">Kumpulan 8 (Set Soalan D)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-slate-600 space-y-1.5 pt-2 border-t border-slate-200">
+                        <p class="font-semibold text-slate-700">Format Kuiz Baharu:</p>
+                        <p><i class="fa-solid fa-check text-teal-600 mr-1.5"></i>Setiap kumpulan menjawab 1 set soalan khas sahaja (3 soalan gabungan subtopik).</p>
+                        <p><i class="fa-solid fa-check text-teal-600 mr-1.5"></i>Set soalan boleh diulang maksimum 2 kali percubaan.</p>
+                        <p><i class="fa-solid fa-check text-teal-600 mr-1.5"></i>Keputusan dan masa akan disimpan dalam Carta Kedudukan.</p>
+                    </div>
+                </div>
+
+                <p id="group-error-msg" class="hidden text-xs text-red-500 font-semibold text-center"></p>
+
+                <button onclick="startQuiz()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-teal-500/20 transition flex items-center justify-center gap-2">
+                    <span>Mula Kuiz Sekarang</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div id="question-screen" class="hidden flex-1 flex flex-col justify-between">
+                <div>
+                    <!-- Status Header -->
+                    <div class="flex justify-between items-center mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs md:text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-slate-500">Kumpulan:</span>
+                            <span id="display-player-name" class="font-bold text-teal-700"></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span id="question-count" class="font-bold bg-teal-100 text-teal-800 px-2.5 py-1 rounded-md">Set Soalan Utama</span>
+                            <span id="repeat-count" class="font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-md">Percubaan 1/2</span>
+                        </div>
+                    </div>
+
+                    <!-- Scenario Box -->
+                    <div id="scenario-text" class="bg-teal-50/80 border-l-4 border-teal-600 p-4 rounded-r-xl text-slate-800 text-xs md:text-sm mb-5 leading-relaxed shadow-sm">
+                    </div>
+
+                    <!-- Sub Questions Container -->
+                    <div id="questions-list" class="space-y-4 max-h-[340px] overflow-y-auto pr-1 custom-scroll">
+                        <!-- Questions injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Footer Action & Feedback -->
+                <div class="mt-5 pt-3 border-t border-slate-100">
+                    <div id="feedback-msg" class="hidden mb-3 p-3 rounded-lg text-xs md:text-sm font-semibold text-center"></div>
+
+                    <div class="flex gap-3">
+                        <button id="submit-btn" onclick="checkAnswers()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl transition shadow">
+                            <i class="fa-solid fa-paper-plane mr-2"></i>Hantar Jawapan
+                        </button>
+                        <button id="retry-btn" onclick="retryQuiz()" class="hidden w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl transition shadow">
+                            <i class="fa-solid fa-rotate-right mr-2"></i>Cuba Lagi (Percubaan Ke-2)
+                        </button>
+                        <button id="finish-btn" onclick="finishQuiz()" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition shadow">
+                            <span>Selesai & Lihat Keputusan</span> <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result-screen" class="hidden text-center py-6 space-y-6">
+                <div class="inline-flex p-4 bg-emerald-100 text-emerald-600 rounded-full mb-1">
+                    <i class="fa-solid fa-award text-4xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Tahniah! Stesen 4 Selesai</h2>
+                    <p class="text-xs md:text-sm text-slate-500 mt-1">Sesi penyelesaian masalah telah berjaya direkodkan.</p>
+                </div>
+
+                <!-- Score Board -->
+                <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                        <p class="text-xs font-semibold text-slate-500">Skor Akhir</p>
+                        <p id="final-score" class="text-2xl font-black text-teal-600 mt-1">0 / 100</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                        <p class="text-xs font-semibold text-slate-500">Masa Diambil</p>
+                        <p id="final-time" class="text-2xl font-black text-slate-700 mt-1">0s</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
+                    <button onclick="showReviewModal()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl transition shadow flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Semak Jawapan</span>
+                    </button>
+                    <button onclick="showLeaderboardModal()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded-xl transition shadow flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        <span>Carta Kedudukan</span>
+                    </button>
+                </div>
+
+                <button onclick="resetToStart()" class="text-xs text-slate-500 hover:text-slate-800 underline pt-2 block mx-auto">
+                    Kembali ke Mula (Pengguna Baharu)
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL 1: LEADERBOARD -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-amber-500 text-xl"></i>
+                    <h3 class="font-bold text-lg text-slate-800">Carta Kedudukan (Leaderboard)</h3>
+                </div>
+                <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="max-h-64 overflow-y-auto pr-1 custom-scroll">
+                <table class="w-full text-left text-xs md:text-sm">
+                    <thead class="bg-slate-100 text-slate-600 uppercase text-[10px] font-bold">
+                        <tr>
+                            <th class="p-2 rounded-l">Ked.</th>
+                            <th class="p-2">Nama</th>
+                            <th class="p-2">Skor</th>
+                            <th class="p-2 rounded-r">Masa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="divide-y divide-slate-100">
+                        <!-- Dynamic Leaderboard Data -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pt-2 flex justify-between items-center border-t">
+                <button onclick="showConfirmResetModal()" class="text-xs text-red-500 hover:underline font-semibold">
+                    <i class="fa-solid fa-trash-can mr-1"></i>Padam Rekod
+                </button>
+                <button onclick="closeLeaderboardModal()" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: REVIEW ANSWERS -->
+    <div id="review-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-amber-500 text-xl"></i>
+                    <h3 class="font-bold text-lg text-slate-800">Semakan Jawapan</h3>
+                </div>
+                <button onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="review-container" class="overflow-y-auto pr-2 custom-scroll space-y-4 flex-1 text-xs md:text-sm">
+                <!-- Dynamic Review Items -->
+            </div>
+
+            <div class="pt-3 border-t text-right">
+                <button onclick="closeReviewModal()" class="bg-slate-800 text-white px-5 py-2 rounded-lg text-xs font-semibold">Tutup Semakan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CONFIRMATION MODAL FOR RESET -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 text-center space-y-4">
+            <div class="p-3 bg-red-100 text-red-600 rounded-full inline-block">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-800">Sahkan Padam Rekod?</h4>
+                <p class="text-xs text-slate-500 mt-1">Adakah anda pasti mahu memadamkan semua rekod Carta Kedudukan?</p>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeConfirmResetModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-xs font-semibold">Batal</button>
+                <button onclick="executeClearLeaderboard()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-xs font-semibold">Ya, Padam</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pemetaan Set Soalan mengikut Kumpulan (1 hingga 8)
+        const groupQuestionMap = {
+            1: 0, // Kumpulan 1 -> Set A
+            2: 1, // Kumpulan 2 -> Set B
+            3: 2, // Kumpulan 3 -> Set C
+            4: 3, // Kumpulan 4 -> Set D
+            5: 0, // Kumpulan 5 -> Set A
+            6: 1, // Kumpulan 6 -> Set B
+            7: 2, // Kumpulan 7 -> Set C
+            8: 3  // Kumpulan 8 -> Set D
+        };
+
+        const questionPool = [
+            {
+                id: 1,
+                scenario: "<strong>Set A:</strong> Gabungan soalan Koordinat, Nisbah dan Kadaran (Set 1).",
+                questions: [
+                    { 
+                        label: "1. Seorang makmum berada pada koordinat (1, 2). Guru meminta makmum tersebut berpindah ke kedudukan baharu pada koordinat (5, 2). Berapakah unit pergerakan makmum pada paksi-x?", 
+                        options: ["2 unit", "4 unit", "3 unit", "5 unit"], 
+                        correct: 1 
+                    },
+                    { 
+                        label: "2. Dalam satu kumpulan makmum, terdapat 3 orang memakai kain pelikat hijau dan 3 orang memakai kain pelikat biru. Nyatakan nisbah bilangan makmum berkain pelikat hijau kepada biru:", 
+                        options: ["3 : 3", "1 : 2", "3 : 2", "2 : 3"], 
+                        correct: 0 
+                    },
+                    { 
+                        label: "3. Sekiranya 30 orang pelajar boleh mendirikan 3 saf solat yang sempurna, berapakah bilangan saf yang dapat dibuat sekiranya bilangan pelajar ialah 90 orang?", 
+                        options: ["6 saf", "8 saf", "9 saf", "10 saf"], 
+                        correct: 2 
+                    }
+                ]
+            },
+            {
+                id: 2,
+                scenario: "<strong>Set B:</strong> Gabungan soalan Koordinat, Nisbah dan Kadaran (Set 2).",
+                questions: [
+                    { 
+                        label: "1. Seorang makmum berada pada koordinat (2, 1) dan perlu bergerak ke koordinat (2, 5) untuk membentuk saf yang betul. Berapakah unit pergerakan makmum pada paksi-y?", 
+                        options: ["3 unit", "5 unit", "4 unit", "2 unit"], 
+                        correct: 2 
+                    },
+                    { 
+                        label: "2. Dalam satu kumpulan makmum, terdapat 2 orang memakai kain pelikat oren dan 2 orang memakai kain pelikat kelabu. Nyatakan nisbah bilangan makmum berkain pelikat oren kepada kelabu:", 
+                        options: ["2 : 3", "2 : 2", "1 : 3", "3 : 2"], 
+                        correct: 1 
+                    },
+                    { 
+                        label: "3. Diberi bahawa 40 orang pelajar dapat membentuk 4 saf solat berjemaah secara seimbang. Hitung bilangan saf solat yang dapat didirikan jika bilangan pelajar bertambah kepada 120 orang:", 
+                        options: ["10 saf", "15 saf", "12 saf", "8 saf"], 
+                        correct: 2 
+                    }
+                ]
+            },
+            {
+                id: 3,
+                scenario: "<strong>Set C:</strong> Gabungan soalan Koordinat, Nisbah dan Kadaran (Set 3).",
+                questions: [
+                    { 
+                        label: "1. Kedudukan seorang makmum pada asalnya ialah (1, 3). Makmum tersebut kemudian berpindah ke kedudukan (4, 6). Berapakah unit pergerakan makmum pada paksi-x dan paksi-y?", 
+                        options: ["3 unit x, 3 unit y", "4 unit x, 2 unit y", "2 unit x, 3 unit y", "3 unit x, 4 unit y"], 
+                        correct: 0 
+                    },
+                    { 
+                        label: "2. Dalam satu kumpulan makmum, terdapat 3 orang memakai kain pelikat hijau dan 2 orang memakai kain pelikat oren. Nyatakan nisbah bilangan makmum berkain pelikat oren kepada hijau:", 
+                        options: ["3 : 2", "2 : 3", "3 : 5", "2 : 5"], 
+                        correct: 1 
+                    },
+                    { 
+                        label: "3. Semasa latihan amali solat di dewan, 50 orang pelajar mendirikan 5 barisan saf yang sama banyak. Sekiranya seramai 150 orang pelajar hadir ke dewan solat, berapakah bilangan saf yang dapat dibentuk?", 
+                        options: ["12 saf", "20 saf", "15 saf", "10 saf"], 
+                        correct: 2 
+                    }
+                ]
+            },
+            {
+                id: 4,
+                scenario: "<strong>Set D:</strong> Gabungan soalan Koordinat, Nisbah dan Kadaran (Set 4).",
+                questions: [
+                    { 
+                        label: "1. Seorang makmum berada di koordinat (5, 5). Untuk menyusun saf dengan lebih teratur, dia bergerak ke koordinat (2, 3). Berapakah unit makmum bergerak pada paksi-x dan paksi-y?", 
+                        options: ["2 unit x, 3 unit y", "3 unit x, 2 unit y", "3 unit x, 3 unit y", "2 unit x, 2 unit y"], 
+                        correct: 1 
+                    },
+                    { 
+                        label: "2. Sebuah kumpulan makmum terdiri daripada 3 orang memakai kain pelikat hijau, 3 orang memakai kain pelikat biru, 2 orang memakai kain pelikat oren dan 2 orang memakai kain pelikat kelabu. Nyatakan nisbah bilangan makmum berkain pelikat hijau kepada jumlah semua makmum:", 
+                        options: ["3 : 10", "3 : 8", "2 : 10", "3 : 6"], 
+                        correct: 0 
+                    },
+                    { 
+                        label: "3. Di sebuah sekolah, 72 orang pelajar dapat menyusun diri kepada 6 saf solat secara adil. Jika seramai 108 orang pelajar hadir ke surau pada hari Jumaat, berapakah bilangan saf yang dapat didirikan?", 
+                        options: ["8 saf", "10 saf", "9 saf", "12 saf"], 
+                        correct: 2 
+                    }
+                ]
+            }
+        ];
+
+        let selectedGroupId = null;
+        let selectedQuestionObj = null;
+        let currentAttempt = 1;
+        let maxAttempts = 2;
+        let totalScore = 0;
+        let userAnswersHistory = [];
+        let startTime, endTime;
+
+        function startQuiz() {
+            const groupVal = document.getElementById('group-select').value;
+            const errEl = document.getElementById('group-error-msg');
+
+            if (!groupVal) {
+                errEl.innerText = "Sila pilih kumpulan anda terlebih dahulu!";
+                errEl.classList.remove('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+
+            selectedGroupId = groupVal;
+            const setIndex = groupQuestionMap[selectedGroupId];
+            selectedQuestionObj = questionPool[setIndex];
+
+            document.getElementById('display-player-name').innerText = `Kumpulan ${selectedGroupId}`;
+
+            currentAttempt = 1;
+            totalScore = 0;
+            userAnswersHistory = [];
+            startTime = new Date();
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('question-screen').classList.remove('hidden');
+
+            loadSetQuestion();
+        }
+
+        function loadSetQuestion() {
+            document.getElementById('repeat-count').innerText = `Percubaan: ${currentAttempt}/${maxAttempts}`;
+            document.getElementById('scenario-text').innerHTML = selectedQuestionObj.scenario;
+            
+            const feedback = document.getElementById('feedback-msg');
+            feedback.classList.add('hidden');
+
+            document.getElementById('submit-btn').classList.remove('hidden');
+            document.getElementById('retry-btn').classList.add('hidden');
+            document.getElementById('finish-btn').classList.add('hidden');
+
+            const listContainer = document.getElementById('questions-list');
+            listContainer.innerHTML = '';
+
+            selectedQuestionObj.questions.forEach((subQ, idx) => {
+                let optionsHtml = subQ.options.map((opt, optIdx) => `
+                    <label class="flex items-center space-x-2 bg-white border border-slate-200 p-2.5 rounded-lg cursor-pointer hover:bg-teal-50 transition border-2 border-transparent">
+                        <input type="radio" name="subq-${idx}" value="${optIdx}" class="text-teal-600 focus:ring-teal-500">
+                        <span class="text-xs md:text-sm text-slate-700 font-medium">${opt}</span>
+                    </label>
+                `).join('');
+
+                listContainer.innerHTML += `
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <p class="font-semibold text-xs md:text-sm text-slate-800 mb-2">${subQ.label}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function checkAnswers() {
+            let allCorrect = true;
+            let currentSelections = [];
+
+            selectedQuestionObj.questions.forEach((subQ, idx) => {
+                const selected = document.querySelector(`input[name="subq-${idx}"]:checked`);
+                const val = selected ? parseInt(selected.value) : -1;
+                currentSelections.push(val);
+
+                if (val !== subQ.correct) {
+                    allCorrect = false;
+                }
+            });
+
+            const feedback = document.getElementById('feedback-msg');
+            feedback.classList.remove('hidden');
+
+            let scoreThisAttempt = allCorrect ? (currentAttempt === 1 ? 100 : 70) : 0;
+
+            recordAnswerHistory(selectedQuestionObj, currentSelections, allCorrect, currentAttempt);
+
+            if (allCorrect) {
+                totalScore = scoreThisAttempt;
+                feedback.className = "mb-3 p-3 rounded-lg text-xs md:text-sm font-semibold text-center bg-emerald-100 text-emerald-800 border border-emerald-200";
+                feedback.innerHTML = `<i class='fa-solid fa-circle-check mr-1.5'></i>Tahniah Kumpulan ${selectedGroupId}! Semua jawapan anda betul pada percubaan ke-${currentAttempt}.`;
+                
+                document.getElementById('submit-btn').classList.add('hidden');
+                document.getElementById('finish-btn').classList.remove('hidden');
+            } else {
+                if (currentAttempt < maxAttempts) {
+                    feedback.className = "mb-3 p-3 rounded-lg text-xs md:text-sm font-semibold text-center bg-amber-100 text-amber-800 border border-amber-200";
+                    feedback.innerHTML = `<i class='fa-solid fa-triangle-exclamation mr-1.5'></i>Jawapan belum tepat. Anda masih mempunyai 1 percubaan lagi untuk mengulang set ini.`;
+
+                    document.getElementById('submit-btn').classList.add('hidden');
+                    document.getElementById('retry-btn').classList.remove('hidden');
+                } else {
+                    totalScore = 30;
+                    feedback.className = "mb-3 p-3 rounded-lg text-xs md:text-sm font-semibold text-center bg-rose-100 text-rose-800 border border-rose-200";
+                    feedback.innerHTML = `<i class='fa-solid fa-circle-xmark mr-1.5'></i>Percubaan telah habis (Maksimum 2 kali). Sila teruskan untuk melihat keputusan akhir.`;
+                    
+                    document.getElementById('submit-btn').classList.add('hidden');
+                    document.getElementById('finish-btn').classList.remove('hidden');
+                }
+            }
+        }
+
+        function retryQuiz() {
+            currentAttempt++;
+            loadSetQuestion();
+        }
+
+        function recordAnswerHistory(questionObj, selections, isCorrect, attemptNum) {
+            userAnswersHistory.push({
+                attempt: attemptNum,
+                question: questionObj,
+                userSelections: selections,
+                isCorrect: isCorrect
+            });
+        }
+
+        function finishQuiz() {
+            endTime = new Date();
+            const timeTaken = Math.round((endTime - startTime) / 1000);
+
+            document.getElementById('question-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('final-score').innerText = `${totalScore} / 100`;
+            document.getElementById('final-time').innerText = `${timeTaken}s`;
+
+            saveToLeaderboard(`Kumpulan ${selectedGroupId}`, totalScore, timeTaken);
+        }
+
+        function saveToLeaderboard(name, score, time) {
+            let leaderboard = JSON.parse(localStorage.getItem('stesen4_leaderboard') || '[]');
+            
+            const existingIdx = leaderboard.findIndex(item => item.name === name);
+            if (existingIdx !== -1) {
+                if (score > leaderboard[existingIdx].score || (score === leaderboard[existingIdx].score && time < leaderboard[existingIdx].time)) {
+                    leaderboard[existingIdx] = { name, score, time, date: new Date().toLocaleDateString() };
+                }
+            } else {
+                leaderboard.push({ name, score, time, date: new Date().toLocaleDateString() });
+            }
+            
+            leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
+            localStorage.setItem('stesen4_leaderboard', JSON.stringify(leaderboard));
+        }
+
+        function showLeaderboardModal() {
+            const leaderboard = JSON.parse(localStorage.getItem('stesen4_leaderboard') || '[]');
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (leaderboard.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada rekod tersimpan.</td></tr>`;
+            } else {
+                leaderboard.forEach((item, index) => {
+                    tbody.innerHTML += `
+                        <tr class="${index === 0 ? 'bg-amber-50 font-bold' : ''}">
+                            <td class="p-2">${index + 1}</td>
+                            <td class="p-2">${item.name}</td>
+                            <td class="p-2 text-teal-600 font-bold">${item.score}</td>
+                            <td class="p-2 text-slate-500">${item.time}s</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+        }
+
+        function showConfirmResetModal() {
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmResetModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function executeClearLeaderboard() {
+            localStorage.removeItem('stesen4_leaderboard');
+            closeConfirmResetModal();
+            showLeaderboardModal();
+        }
+
+        function showReviewModal() {
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            userAnswersHistory.forEach((item, index) => {
+                let subQHtml = '';
+                item.question.questions.forEach((subQ, subIdx) => {
+                    const userVal = item.userSelections[subIdx];
+                    const userAnsText = userVal !== -1 && userVal !== undefined ? subQ.options[userVal] : "Tiada Jawapan";
+                    const correctAnsText = subQ.options[subQ.correct];
+                    const isSubCorrect = userVal === subQ.correct;
+
+                    subQHtml += `
+                        <div class="p-2.5 rounded-lg ${isSubCorrect ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'} mb-2">
+                            <p class="font-semibold text-slate-800">${subQ.label}</p>
+                            <p class="text-xs mt-1">Jawapan Anda: <span class="${isSubCorrect ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}">${userAnsText}</span></p>
+                            ${!isSubCorrect ? `<p class="text-xs text-slate-600">Jawapan Betul: <span class="font-bold text-emerald-700">${correctAnsText}</span></p>` : ''}
+                        </div>
+                    `;
+                });
+
+                container.innerHTML += `
+                    <div class="border rounded-xl p-4 bg-slate-50">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded ${item.isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} mb-2 inline-block">Percubaan Ke-${item.attempt}</span>
+                        <div class="text-xs text-slate-700 mb-3">${item.question.scenario}</div>
+                        ${subQHtml}
+                    </div>
+                `;
+            });
+
+            document.getElementById('review-modal').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').classList.add('hidden');
+        }
+
+        function resetToStart() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('group-select').value = '';
+        }
+    </script>
+</body>
+</html>
